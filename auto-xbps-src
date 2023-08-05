@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+pkg="$(ls ~/Dev/void-packages/srcpkgs | rofi -dmenu -i 20 -p "Src-Packages ")"
+DIR1=$HOME/Dev/void-packages/
+DIR2=$HOME/Dev/void-packages/srcpkgs
+CHECK="$(xbps-query -s "$pkg" | wc -l)"
+
+
+if [ $pkg ]
+then
+    if [ "$CHECK" -eq "1" ]
+    then
+        notify-send "A preparar o $pkg para a instalação..."
+        sleep 2
+        exit
+    else
+        cd "$DIR1" || exit
+        git pull
+
+        cd "$DIR2" || exit
+        if [[ -d "$pkg" ]]
+        then
+            cd "$DIR1" || exit
+            notify-send -t 60000 " A instalar $pkg..." 
+            ./xbps-src pkg "$pkg" && alacritty -e xbps-install --repository hostdir/binpkgs --repository hostdir/binpkgs "$pkg"
+        else
+            notify-send "Não foi encontrado o programa, tente novamente."
+            exit
+        fi
+    fi
+else
+    exit
+fi
+notify-send "O programa $pkg foi instalado com sucesso!"
